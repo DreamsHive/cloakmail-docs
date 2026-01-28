@@ -1,0 +1,110 @@
+---
+title: Installation
+description: How to install and set up CloakMail on your server
+---
+
+# Installation
+
+This guide covers the different ways to install and run CloakMail.
+
+## Prerequisites
+
+Before installing CloakMail, ensure you have:
+
+- **Docker and Docker Compose** (recommended method)
+- A domain with **MX records** pointing to your server (for receiving emails)
+- **Port 25** accessible for SMTP traffic
+
+<Callout type="warning">
+  Many cloud providers block port 25 by default. You may need to request access or use a VPS provider that allows SMTP traffic.
+</Callout>
+
+## Docker Installation (Recommended)
+
+The easiest way to run CloakMail is with Docker:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/DreamsHive/cloakmail.git
+cd cloakmail
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your settings:
+
+```bash title=".env"
+# Your email domain
+DOMAIN=mail.example.com
+
+# Application name shown in UI
+APP_NAME=CloakMail
+
+# Email expiration time (in seconds)
+EMAIL_TTL_SECONDS=3600
+
+# Server ports
+SMTP_PORT=25
+API_PORT=3000
+```
+
+### 3. Start the Services
+
+```bash
+docker compose up -d
+```
+
+<Callout type="info">
+  CloakMail is now running:
+  - **Web UI**: `http://localhost:5173`
+  - **API**: `http://localhost:3000`
+</Callout>
+
+## Using Pre-built Docker Images
+
+You can also use the pre-built images from GitHub Container Registry:
+
+```bash
+# Pull the images
+docker pull ghcr.io/dreamshive/cloakmail-server:latest
+docker pull ghcr.io/dreamshive/cloakmail-web:latest
+```
+
+## DNS Configuration
+
+For CloakMail to receive emails, configure your domain's DNS:
+
+### MX Record
+
+```
+Type: MX
+Host: @
+Value: mail.example.com
+Priority: 10
+```
+
+### A Record
+
+```
+Type: A
+Host: mail
+Value: YOUR_SERVER_IP
+```
+
+## Verify Installation
+
+1. Open `http://localhost:5173` in your browser
+2. Generate a new inbox
+3. Send a test email to the generated address
+4. Check that the email appears in the inbox
+
+## Next Steps
+
+- [Quick Start](/getting-started/quick-start) — Create your first inbox
+- [Docker Configuration](/getting-started/docker) — Advanced Docker settings
+- [Environment Variables](/configuration/environment-variables) — Full configuration reference

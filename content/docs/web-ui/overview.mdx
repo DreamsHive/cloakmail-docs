@@ -1,0 +1,117 @@
+---
+title: Web UI Overview
+description: Overview of the CloakMail web interface
+---
+
+# Web UI Overview
+
+CloakMail includes a modern, user-friendly web interface for managing disposable email inboxes.
+
+## Technology Stack
+
+The web UI is built with:
+
+- **SvelteKit** — Modern web framework
+- **Tailwind CSS** — Utility-first CSS
+- **TypeScript** — Type safety
+
+## Accessing the UI
+
+By default, the web UI is available at:
+
+```
+http://localhost:5173
+```
+
+In production, configure your reverse proxy to serve the UI on your domain.
+
+## Main Features
+
+### Inbox Generation
+
+Generate a new disposable inbox instantly:
+
+1. Click **"Generate Inbox"**
+2. Copy the generated email address
+3. Use it for temporary signups or verifications
+
+### Email Management
+
+View and manage received emails:
+
+- **View emails** — Click any email to see full content
+- **Delete emails** — Remove individual emails
+- **Delete inbox** — Remove the entire inbox and all emails
+
+### Real-time Updates
+
+The inbox automatically refreshes to show new emails as they arrive without requiring manual refresh.
+
+### Copy to Clipboard
+
+Easily copy:
+
+- Email addresses
+- Verification codes from email content
+- Full email content
+
+## Interface Components
+
+### Header
+
+- Application name and branding
+- Theme toggle (light/dark mode)
+- GitHub link
+
+### Inbox View
+
+- Generated email address with copy button
+- Expiration countdown
+- Email list with sender, subject, and timestamp
+
+### Email Detail
+
+- Full email headers
+- Plain text and HTML content
+- Attachments (if any)
+- Delete button
+
+## Responsive Design
+
+The UI is fully responsive and works on:
+
+- Desktop browsers
+- Tablets
+- Mobile devices
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `N` | Generate new inbox |
+| `C` | Copy email address |
+| `Esc` | Close email detail |
+| `Del` | Delete selected email |
+
+## Customization
+
+### Application Name
+
+Change the displayed name via environment variable:
+
+```bash
+APP_NAME=MyCompanyMail
+```
+
+### Domain Display
+
+The domain shown is based on your `DOMAIN` configuration:
+
+```bash
+DOMAIN=mail.mycompany.com
+```
+
+## Next Steps
+
+- [Web UI Features](/web-ui/features) — Detailed feature guide
+- [Installation](/getting-started/installation) — Deploy CloakMail

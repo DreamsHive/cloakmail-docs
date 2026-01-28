@@ -1,0 +1,161 @@
+---
+title: API Overview
+description: Introduction to the CloakMail REST API
+---
+
+# API Overview
+
+CloakMail provides a RESTful API for programmatic access to all features. The API is designed to be simple, predictable, and easy to integrate.
+
+## Base URL
+
+All API endpoints are relative to the base URL:
+
+```
+http://localhost:3000
+```
+
+In production, replace with your actual domain:
+
+```
+https://api.mail.example.com
+```
+
+## Authentication
+
+The CloakMail API is designed to be used **without authentication** by default, matching the philosophy of the service — instant, anonymous access.
+
+<Callout type="info">
+  For production deployments with restricted access, you can configure API keys or rate limiting at the reverse proxy level.
+</Callout>
+
+## Response Format
+
+All responses are JSON formatted. Example inbox response:
+
+```json
+{
+  "emails": [
+    {
+      "id": "abc123",
+      "to": "test@mail.example.com",
+      "from": "sender@example.com",
+      "subject": "Test Email",
+      "text": "Plain text content...",
+      "html": "<html>...</html>",
+      "headers": {},
+      "receivedAt": "2024-01-15T10:35:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1,
+    "hasMore": false
+  }
+}
+```
+
+## Error Handling
+
+Errors return appropriate HTTP status codes with a JSON body:
+
+```json
+{
+  "error": "Inbox not found"
+}
+```
+
+### Common Status Codes
+
+| Status | Description |
+|--------|-------------|
+| `200` | Success |
+| `404` | Not Found — Resource doesn't exist |
+| `429` | Too Many Requests — Rate limited |
+| `500` | Server Error |
+
+## Quick Examples
+
+### Get Emails for an Inbox
+
+```bash
+curl http://localhost:3000/api/inbox/test@mail.example.com
+```
+
+### Get Emails with Pagination
+
+```bash
+curl "http://localhost:3000/api/inbox/test@mail.example.com?page=1&limit=20"
+```
+
+### Get a Specific Email
+
+```bash
+curl http://localhost:3000/api/email/abc123
+```
+
+### Delete an Inbox
+
+```bash
+curl -X DELETE http://localhost:3000/api/inbox/test@mail.example.com
+```
+
+### Delete a Specific Email
+
+```bash
+curl -X DELETE http://localhost:3000/api/email/abc123
+```
+
+## SDK Support
+
+While there's no official SDK, the API is simple enough to use with any HTTP client:
+
+### JavaScript/Node.js
+
+```javascript
+const response = await fetch('http://localhost:3000/api/inbox/test@mail.example.com');
+const data = await response.json();
+console.log(data.emails);
+```
+
+### Python
+
+```python
+import requests
+
+response = requests.get('http://localhost:3000/api/inbox/test@mail.example.com')
+data = response.json()
+print(data['emails'])
+```
+
+### Go
+
+```go
+resp, err := http.Get("http://localhost:3000/api/inbox/test@mail.example.com")
+if err != nil {
+    log.Fatal(err)
+}
+defer resp.Body.Close()
+```
+
+## Rate Limiting
+
+By default, there are no rate limits. For production deployments, consider implementing rate limiting at the reverse proxy level.
+
+Example with Nginx:
+
+```nginx
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+
+location /api {
+    limit_req zone=api burst=20 nodelay;
+    proxy_pass http://localhost:3000;
+}
+```
+
+## Next Steps
+
+- [API Endpoints](/api-reference/endpoints) — Complete endpoint reference
+- [OpenAPI Spec](/api-reference/openapi) — Download the OpenAPI specification

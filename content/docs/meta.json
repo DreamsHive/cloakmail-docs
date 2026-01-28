@@ -1,0 +1,29 @@
+{
+  "title": "CloakMail Documentation",
+  "description": "Self-hosted, open-source disposable email service",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started/installation",
+    "getting-started/quick-start",
+    "getting-started/docker",
+    "---Configuration---",
+    "configuration/environment-variables",
+    "configuration/smtp-settings",
+    "configuration/ttl-settings",
+    "---API Reference---",
+    "api-reference/index",
+    "api-reference/overview",
+    "api-reference/endpoints",
+    "api-reference/openapi",
+    "---Web UI---",
+    "web-ui/overview",
+    "web-ui/features",
+    "---Deployment---",
+    "deployment/docker",
+    "deployment/production",
+    "---Contributing---",
+    "contributing"
+  ]
+}

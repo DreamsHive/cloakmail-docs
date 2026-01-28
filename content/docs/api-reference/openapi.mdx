@@ -1,0 +1,246 @@
+---
+title: OpenAPI Specification
+description: CloakMail OpenAPI specification and documentation
+---
+
+# OpenAPI Specification
+
+CloakMail provides OpenAPI 3.0 specification for API integration and code generation.
+
+## Specification URL
+
+The OpenAPI spec is available at:
+
+```
+http://localhost:3000/api/openapi.json
+```
+
+## Download
+
+You can download the specification:
+
+```bash
+curl http://localhost:3000/api/openapi.json -o openapi.json
+```
+
+## Using with Tools
+
+### Swagger UI
+
+View the API documentation interactively:
+
+```bash
+docker run -p 8080:8080 -e SWAGGER_JSON=/openapi.json \
+  -v $(pwd)/openapi.json:/openapi.json \
+  swaggerapi/swagger-ui
+```
+
+Then open `http://localhost:8080` in your browser.
+
+### Generating Client Code
+
+Use OpenAPI Generator to create client libraries:
+
+```bash
+# Install OpenAPI Generator
+npm install @openapitools/openapi-generator-cli -g
+
+# Generate TypeScript client
+openapi-generator-cli generate \
+  -i http://localhost:3000/api/openapi.json \
+  -g typescript-fetch \
+  -o ./cloakmail-client
+
+# Generate Python client
+openapi-generator-cli generate \
+  -i http://localhost:3000/api/openapi.json \
+  -g python \
+  -o ./cloakmail-python
+```
+
+### Postman
+
+Import the spec directly into Postman:
+
+1. Open Postman
+2. Click **Import**
+3. Select **Link**
+4. Enter: `http://localhost:3000/api/openapi.json`
+5. Click **Import**
+
+### Insomnia
+
+Import into Insomnia:
+
+1. Open Insomnia
+2. Click **Application** → **Preferences** → **Data**
+3. Click **Import Data** → **From URL**
+4. Enter the OpenAPI URL
+
+## Specification Preview
+
+```yaml
+openapi: 3.0.0
+info:
+  title: CloakMail API
+  version: 1.0.0
+  description: Self-hosted disposable email service API
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/inbox/{address}:
+    get:
+      summary: Get inbox emails
+      operationId: getInbox
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+      responses:
+        '200':
+          description: Inbox emails
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboxResponse'
+
+    delete:
+      summary: Delete inbox
+      operationId: deleteInbox
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+
+  /api/email/{id}:
+    get:
+      summary: Get email by ID
+      operationId: getEmail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredEmail'
+
+    delete:
+      summary: Delete email
+      operationId: deleteEmail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+
+components:
+  schemas:
+    StoredEmail:
+      type: object
+      properties:
+        id:
+          type: string
+        to:
+          type: string
+        from:
+          type: string
+        subject:
+          type: string
+        text:
+          type: string
+        html:
+          type: string
+        headers:
+          type: object
+        receivedAt:
+          type: string
+          format: date-time
+
+    InboxResponse:
+      type: object
+      properties:
+        emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoredEmail'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+            hasMore:
+              type: boolean
+```
+
+## Type Safety
+
+For TypeScript projects, you can generate types from the OpenAPI spec:
+
+```bash
+npx openapi-typescript http://localhost:3000/api/openapi.json -o types.d.ts
+```
+
+Then use the types in your code:
+
+```typescript
+import type { components } from './types';
+
+type StoredEmail = components['schemas']['StoredEmail'];
+type InboxResponse = components['schemas']['InboxResponse'];
+```
+
+## Next Steps
+
+- [API Endpoints](/api-reference/endpoints) — Detailed endpoint documentation
+- [Quick Start](/getting-started/quick-start) — Try the API

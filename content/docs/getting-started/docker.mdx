@@ -1,0 +1,197 @@
+---
+title: Docker Configuration
+description: Advanced Docker configuration for CloakMail
+---
+
+# Docker Configuration
+
+This guide covers advanced Docker configuration options for CloakMail.
+
+## Docker Compose File
+
+The default `docker-compose.yml` includes all necessary services:
+
+```yaml title="docker-compose.yml"
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    ports:
+      - "25:25"
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SMTP_PORT=25
+      - API_PORT=3000
+      - EMAIL_TTL_SECONDS=${EMAIL_TTL_SECONDS:-86400}
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/dreamshive/cloakmail-web:latest
+    ports:
+      - "5173:5173"
+    environment:
+      - PUBLIC_API_URL=http://server:3000
+      - PUBLIC_APP_NAME=${APP_NAME:-CloakMail}
+      - PUBLIC_EMAIL_DOMAIN=${DOMAIN:-localhost}
+      - PORT=5173
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+```
+
+<Callout type="info">
+  CloakMail uses Redis for email storage. The `redis_data` volume ensures emails persist across container restarts.
+</Callout>
+
+## Custom Configuration
+
+### Using a Custom Network
+
+```yaml
+version: '3.8'
+
+networks:
+  cloakmail:
+    driver: bridge
+
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    networks:
+      - cloakmail
+    # ... other config
+
+  web:
+    image: ghcr.io/dreamshive/cloakmail-web:latest
+    networks:
+      - cloakmail
+    # ... other config
+```
+
+### Adding Persistent Storage
+
+If you want emails to persist across restarts:
+
+```yaml
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    volumes:
+      - cloakmail_data:/app/data
+    # ... other config
+
+volumes:
+  cloakmail_data:
+```
+
+<Callout type="info">
+  Note: By design, CloakMail is meant for temporary emails. Persistence is optional and may not be needed for most use cases.
+</Callout>
+
+### Running Behind a Reverse Proxy
+
+Example with Traefik:
+
+```yaml
+services:
+  web:
+    image: ghcr.io/dreamshive/cloakmail-web:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cloakmail.rule=Host(`mail.example.com`)"
+      - "traefik.http.routers.cloakmail.tls=true"
+      - "traefik.http.routers.cloakmail.tls.certresolver=letsencrypt"
+```
+
+Example with Nginx:
+
+```nginx title="nginx.conf"
+server {
+    listen 80;
+    server_name mail.example.com;
+
+    location / {
+        proxy_pass http://localhost:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /api {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+## Health Checks
+
+Add health checks to ensure services are running:
+
+```yaml
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+## Resource Limits
+
+Set resource limits for production:
+
+```yaml
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+```
+
+## Useful Commands
+
+```bash
+# Start services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
+
+# Stop services
+docker compose down
+
+# Update to latest images
+docker compose pull && docker compose up -d
+```
+
+## Next Steps
+
+- [Environment Variables](/configuration/environment-variables) — Full configuration reference
+- [Production Deployment](/deployment/production) — Production best practices

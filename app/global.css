@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Custom fonts - keep for better typography */
+@theme {
+  --font-sans: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Tabular', ui-monospace, monospace;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+}
+
+body {
+  font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+}
+
+code, pre, kbd {
+  font-family: 'Tabular', ui-monospace, monospace;
+}
+
+/* Utility classes for custom fonts */
+@layer utilities {
+  .font-heading {
+    font-family: 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .font-body {
+    font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  }
+}

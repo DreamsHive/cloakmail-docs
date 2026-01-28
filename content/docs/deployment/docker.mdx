@@ -1,0 +1,182 @@
+---
+title: Docker Deployment
+description: Deploy CloakMail with Docker in production
+---
+
+# Docker Deployment
+
+This guide covers deploying CloakMail with Docker in a production environment.
+
+## Prerequisites
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- A server with a public IP
+- A domain with DNS configured
+
+## Production Docker Compose
+
+Use the official production configuration from the repository:
+
+```yaml title="docker-compose.production.yml"
+services:
+  server:
+    image: ghcr.io/dreamshive/cloakmail-server:latest
+    ports:
+      - "25:25"
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SMTP_PORT=25
+      - API_PORT=3000
+      - EMAIL_TTL_SECONDS=86400
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/dreamshive/cloakmail-web:latest
+    ports:
+      - "5173:5173"
+    environment:
+      - PUBLIC_API_URL=http://server:3000
+      - PUBLIC_APP_NAME=${APP_NAME:-CloakMail}
+      - PUBLIC_EMAIL_DOMAIN=${DOMAIN:-localhost}
+      - PORT=5173
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+```
+
+<Callout type="info">
+  CloakMail uses Redis for email storage. The `redis_data` volume ensures emails persist across container restarts.
+</Callout>
+
+## Environment Configuration
+
+Create a `.env.production` file:
+
+```bash title=".env.production"
+DOMAIN=mail.example.com
+APP_NAME=CloakMail
+EMAIL_TTL_SECONDS=3600
+```
+
+## Running in Production
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+```
+
+## Updating
+
+Update to the latest version:
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Monitoring
+
+### View Logs
+
+```bash
+# All services
+docker compose -f docker-compose.prod.yml logs -f
+
+# Specific service
+docker compose -f docker-compose.prod.yml logs -f server
+```
+
+### Check Health
+
+```bash
+docker compose -f docker-compose.prod.yml ps
+```
+
+### Resource Usage
+
+```bash
+docker stats
+```
+
+## Backup
+
+While CloakMail is designed for temporary emails, you might want to backup configuration:
+
+```bash
+# Backup environment
+cp .env.production .env.production.backup
+
+# Backup docker compose
+cp docker-compose.prod.yml docker-compose.prod.yml.backup
+```
+
+## Scaling
+
+For high-traffic deployments, run multiple instances behind a load balancer:
+
+```yaml
+services:
+  server:
+    deploy:
+      replicas: 3
+```
+
+<Callout type="warning">
+  The SMTP server should only run as a single instance to avoid port conflicts.
+</Callout>
+
+## Security Considerations
+
+### Firewall Rules
+
+Only expose necessary ports:
+
+```bash
+# Allow SMTP (required for email)
+sudo ufw allow 25/tcp
+
+# Allow HTTP/HTTPS (for web UI via reverse proxy)
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Block direct access to API (use reverse proxy)
+# Port 3000 and 5173 should NOT be exposed publicly
+```
+
+### Network Isolation
+
+Use Docker networks to isolate services:
+
+```yaml
+networks:
+  frontend:
+  backend:
+
+services:
+  server:
+    networks:
+      - backend
+
+  web:
+    networks:
+      - frontend
+      - backend
+```
+
+## Next Steps
+
+- [Production Deployment](/deployment/production) — Complete production setup
+- [SMTP Settings](/configuration/smtp-settings) — Configure email receiving

@@ -1,0 +1,73 @@
+---
+title: Introduction
+description: CloakMail - Self-hosted, open-source disposable email service
+---
+
+# Welcome to CloakMail
+
+CloakMail is a **self-hosted, open-source disposable email service** designed for privacy and simplicity. Generate temporary email addresses instantly without any signup or tracking.
+
+## Why CloakMail?
+
+<Cards>
+  <Card title="Instant Inboxes" href="/getting-started/quick-start">
+    No signup required — generate disposable email addresses instantly
+  </Card>
+  <Card title="Auto-Expiring" href="/configuration/ttl-settings">
+    Emails automatically expire after configurable TTL
+  </Card>
+  <Card title="Zero Tracking" href="/getting-started/installation">
+    No cookies, no analytics, complete privacy
+  </Card>
+  <Card title="REST API" href="/api-reference/overview">
+    Full REST API with OpenAPI specification
+  </Card>
+</Cards>
+
+## Quick Start
+
+Get CloakMail running with Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/DreamsHive/cloakmail.git
+cd cloakmail
+
+# Configure environment
+cp .env.example .env
+
+# Start with Docker
+docker compose up -d
+```
+
+<Callout type="info">
+  CloakMail will be available at `http://localhost:5173` (Web UI) and `http://localhost:3000` (API).
+</Callout>
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **No Authentication** | Generate inboxes instantly without signup |
+| **Auto-Expiring** | Configurable TTL for automatic cleanup |
+| **Zero Tracking** | No cookies, analytics, or IP logging |
+| **Built-in SMTP** | Receives emails directly without third-party providers |
+| **Self-Hosted** | Complete control over your data and infrastructure |
+| **REST API** | Fully documented OpenAPI spec with typed endpoints |
+| **Modern Web UI** | Clean interface built with SvelteKit and Tailwind CSS |
+| **Docker-Ready** | Single command deployment with Docker Compose |
+
+## Architecture
+
+CloakMail consists of three main components:
+
+1. **SMTP Server** — Receives incoming emails on port 25
+2. **REST API** — Provides programmatic access to inboxes and emails
+3. **Web UI** — User-friendly interface for managing temporary inboxes
+
+## Next Steps
+
+- [Installation](/getting-started/installation) — Set up CloakMail on your server
+- [Quick Start](/getting-started/quick-start) — Create your first disposable inbox
+- [Configuration](/configuration/environment-variables) — Customize your instance
+- [API Reference](/api-reference/overview) — Integrate with your applications

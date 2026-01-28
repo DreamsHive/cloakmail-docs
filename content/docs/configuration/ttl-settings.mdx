@@ -1,0 +1,115 @@
+---
+title: TTL Settings
+description: Configure email expiration and auto-cleanup in CloakMail
+---
+
+# TTL Settings
+
+CloakMail automatically deletes emails after a configurable time-to-live (TTL) period. This ensures privacy and keeps the system clean.
+
+## Basic Configuration
+
+Set the TTL using the `EMAIL_TTL_SECONDS` environment variable:
+
+```bash
+# 1 hour (default)
+EMAIL_TTL_SECONDS=3600
+```
+
+## Common TTL Values
+
+| Duration | Value (seconds) |
+|----------|-----------------|
+| 5 minutes | `300` |
+| 15 minutes | `900` |
+| 30 minutes | `1800` |
+| 1 hour | `3600` |
+| 2 hours | `7200` |
+| 6 hours | `21600` |
+| 12 hours | `43200` |
+| 24 hours | `86400` |
+| 7 days | `604800` |
+
+## How TTL Works
+
+1. **On Inbox Creation** — An expiration timestamp is set based on the current time + TTL
+2. **Background Cleanup** — A background process periodically removes expired emails
+3. **On Access** — Expired emails are also cleaned up when the inbox is accessed
+
+```
+Created At: 2024-01-15 10:00:00
+TTL: 3600 seconds (1 hour)
+Expires At: 2024-01-15 11:00:00
+```
+
+<Callout type="info">
+  The TTL applies to the entire inbox, not individual emails. When the inbox expires, all emails within it are deleted.
+</Callout>
+
+## Use Case Recommendations
+
+### Quick Verifications (5-15 minutes)
+
+For one-time verification codes:
+
+```bash
+EMAIL_TTL_SECONDS=300  # 5 minutes
+```
+
+### Testing & Development (1-2 hours)
+
+For development and testing workflows:
+
+```bash
+EMAIL_TTL_SECONDS=3600  # 1 hour
+```
+
+### Temporary Signups (24 hours)
+
+For signing up to services you might need to verify later:
+
+```bash
+EMAIL_TTL_SECONDS=86400  # 24 hours
+```
+
+### Extended Use (7 days)
+
+For longer-term temporary email needs:
+
+```bash
+EMAIL_TTL_SECONDS=604800  # 7 days
+```
+
+## Storage Considerations
+
+Longer TTL values mean:
+
+- More storage usage
+- More emails retained in the system
+- Potentially higher memory usage
+
+For high-traffic deployments, consider using shorter TTL values to keep resource usage low.
+
+## Monitoring
+
+Use the health endpoint to check service status:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Response:
+
+```json
+{
+  "status": "ok",
+  "smtp": "connected",
+  "redis": "connected",
+  "uptime": 3600
+}
+```
+
+## Next Steps
+
+- [Environment Variables](/configuration/environment-variables) — All configuration options
+- [API Reference](/api-reference/overview) — Programmatic inbox management

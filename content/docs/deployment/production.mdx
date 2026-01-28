@@ -1,0 +1,217 @@
+---
+title: Production Deployment
+description: Best practices for deploying CloakMail in production
+---
+
+# Production Deployment
+
+This guide covers best practices for deploying CloakMail in a production environment.
+
+## Infrastructure Requirements
+
+### Server Specifications
+
+Minimum recommended specs:
+
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| CPU | 1 core | 2 cores |
+| RAM | 1 GB | 2 GB |
+| Storage | 10 GB | 20 GB |
+| Network | 100 Mbps | 1 Gbps |
+
+### Hosting Providers
+
+CloakMail works best on providers that allow SMTP traffic:
+
+| Provider | SMTP Support |
+|----------|-------------|
+| DigitalOcean | Yes |
+| Linode | Yes |
+| Vultr | Yes |
+| Hetzner | Yes |
+| OVH | Yes |
+| AWS | Requires approval |
+| GCP | Requires relay |
+
+## Reverse Proxy Setup
+
+### Nginx Configuration
+
+```nginx title="/etc/nginx/sites-available/cloakmail"
+server {
+    listen 80;
+    server_name mail.example.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name mail.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/mail.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mail.example.com/privkey.pem;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Web UI
+    location / {
+        proxy_pass http://127.0.0.1:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # API
+    location /api {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Caddy Configuration
+
+```text title="Caddyfile"
+mail.example.com {
+    reverse_proxy /api/* localhost:3000
+    reverse_proxy localhost:5173
+}
+```
+
+## SSL Certificates
+
+### Let's Encrypt with Certbot
+
+```bash
+# Install certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Get certificate
+sudo certbot --nginx -d mail.example.com
+
+# Auto-renewal is configured automatically
+```
+
+## DNS Configuration
+
+### Required Records
+
+```
+# MX Record
+@    MX    10    mail.example.com
+
+# A Record
+mail    A    YOUR_SERVER_IP
+
+# SPF Record (recommended)
+@    TXT    "v=spf1 a mx ~all"
+
+# DMARC Record (recommended)
+_dmarc    TXT    "v=DMARC1; p=none; rua=mailto:admin@example.com"
+```
+
+## Monitoring
+
+### Prometheus Metrics
+
+Add a metrics endpoint for monitoring:
+
+```yaml
+services:
+  server:
+    ports:
+      - "127.0.0.1:9090:9090"  # Metrics port
+```
+
+### Uptime Monitoring
+
+Use services like UptimeRobot or Better Uptime to monitor:
+
+- Web UI availability
+- API health endpoint
+- SMTP port connectivity
+
+### Log Aggregation
+
+Ship logs to a central location:
+
+```yaml
+services:
+  server:
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24224"
+```
+
+## Security Checklist
+
+- [ ] SSL/TLS enabled for web traffic
+- [ ] Firewall configured (only ports 25, 80, 443 open)
+- [ ] Fail2ban configured for SSH
+- [ ] Regular security updates applied
+- [ ] Docker images from trusted registry
+- [ ] No sensitive data in environment files committed to git
+- [ ] Rate limiting configured at reverse proxy
+
+## Maintenance
+
+### Regular Tasks
+
+| Task | Frequency |
+|------|-----------|
+| Security updates | Weekly |
+| Docker image updates | Monthly |
+| Log rotation | Automatic |
+| SSL certificate renewal | Automatic (Let's Encrypt) |
+| Backup configuration | Before changes |
+
+### Update Procedure
+
+```bash
+# Pull latest images
+docker compose pull
+
+# Restart with zero downtime
+docker compose up -d --no-deps --build
+
+# Verify health
+docker compose ps
+curl https://mail.example.com/api/health
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Emails not being received:**
+
+1. Check MX records: `dig MX example.com`
+2. Check port 25 is open: `telnet mail.example.com 25`
+3. Check server logs: `docker compose logs server`
+
+**Web UI not loading:**
+
+1. Check Nginx logs: `sudo tail -f /var/log/nginx/error.log`
+2. Check container status: `docker compose ps`
+3. Check container logs: `docker compose logs web`
+
+**High resource usage:**
+
+1. Check TTL settings — shorter TTL means less storage
+2. Check for spam — block known spam sources
+3. Scale horizontally if needed
+
+## Next Steps
+
+- [Docker Deployment](/deployment/docker) — Docker-specific configuration
+- [SMTP Settings](/configuration/smtp-settings) — Email receiving configuration

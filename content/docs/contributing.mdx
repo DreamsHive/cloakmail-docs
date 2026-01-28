@@ -1,0 +1,165 @@
+---
+title: Contributing
+description: How to contribute to CloakMail
+---
+
+# Contributing
+
+Thank you for your interest in contributing to CloakMail! This guide will help you get started.
+
+## Ways to Contribute
+
+- **Report bugs** — Found an issue? Open a GitHub issue
+- **Suggest features** — Have an idea? Start a discussion
+- **Submit code** — Fix bugs or add features via pull requests
+- **Improve docs** — Help make the documentation better
+- **Share** — Star the repo and spread the word
+
+## Getting Started
+
+### Fork and Clone
+
+```bash
+# Fork the repository on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/cloakmail.git
+cd cloakmail
+```
+
+### Set Up Development Environment
+
+```bash
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+```
+
+### Create a Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+## Development Guidelines
+
+### Code Style
+
+- Use TypeScript for type safety
+- Follow existing code patterns
+- Use meaningful variable and function names
+- Add comments for complex logic
+
+### Commit Messages
+
+Follow conventional commits:
+
+```
+feat: add new inbox search feature
+fix: resolve email parsing issue
+docs: update installation guide
+chore: update dependencies
+```
+
+### Testing
+
+Run tests before submitting:
+
+```bash
+# Run all tests
+bun test
+
+# Run specific test file
+bun test src/inbox.test.ts
+```
+
+## Pull Request Process
+
+1. **Update documentation** — If your change affects usage
+2. **Add tests** — For new features or bug fixes
+3. **Run linting** — `bun run lint`
+4. **Run tests** — `bun test`
+5. **Create PR** — With a clear description
+
+### PR Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Refactoring
+
+## Testing
+How was this tested?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Linting passes
+- [ ] Documentation updated
+```
+
+## Reporting Issues
+
+### Bug Reports
+
+Include:
+
+- CloakMail version
+- Operating system
+- Steps to reproduce
+- Expected vs actual behavior
+- Error messages or logs
+
+### Feature Requests
+
+Include:
+
+- Use case description
+- Proposed solution
+- Alternatives considered
+
+## Code of Conduct
+
+- Be respectful and inclusive
+- Focus on constructive feedback
+- Help others learn and grow
+- Follow the [Contributor Covenant](https://www.contributor-covenant.org/)
+
+## Project Structure
+
+```
+cloakmail/
+├── packages/
+│   ├── server/       # SMTP and API server
+│   └── web/          # SvelteKit web UI
+├── docker/           # Docker configuration
+├── docs/             # Documentation
+└── scripts/          # Build and deploy scripts
+```
+
+## Getting Help
+
+- **GitHub Discussions** — Ask questions
+- **GitHub Issues** — Report bugs
+- **Discord** — Real-time chat (if available)
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## Thank You!
+
+Every contribution, no matter how small, helps make CloakMail better. Thank you for being part of the community!
+
+<Cards>
+  <Card title="GitHub Repository" href="https://github.com/DreamsHive/cloakmail">
+    View source code and contribute
+  </Card>
+  <Card title="Report an Issue" href="https://github.com/DreamsHive/cloakmail/issues">
+    Found a bug? Let us know
+  </Card>
+</Cards>

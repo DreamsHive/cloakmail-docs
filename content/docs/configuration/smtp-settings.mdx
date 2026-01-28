@@ -1,0 +1,149 @@
+---
+title: SMTP Settings
+description: Configure the CloakMail SMTP server
+---
+
+# SMTP Settings
+
+CloakMail includes a built-in SMTP server for receiving emails. This guide covers how to configure it properly.
+
+## Basic Configuration
+
+The SMTP server listens on port 25 by default. Configure it with:
+
+```bash
+SMTP_PORT=25
+DOMAIN=mail.example.com
+```
+
+## DNS Requirements
+
+For the SMTP server to receive emails, you need to configure your domain's DNS records:
+
+### MX Record (Required)
+
+The MX record tells other mail servers where to send emails for your domain:
+
+```
+Type:     MX
+Host:     @
+Value:    mail.example.com
+Priority: 10
+TTL:      3600
+```
+
+### A Record (Required)
+
+Point your mail subdomain to your server's IP:
+
+```
+Type:  A
+Host:  mail
+Value: YOUR_SERVER_IP
+TTL:   3600
+```
+
+### SPF Record (Recommended)
+
+Helps prevent email spoofing:
+
+```
+Type:  TXT
+Host:  @
+Value: v=spf1 a mx ~all
+TTL:   3600
+```
+
+## Port Configuration
+
+<Callout type="warning">
+  Port 25 is the standard SMTP port but is often blocked by cloud providers. Check with your hosting provider if emails aren't being received.
+</Callout>
+
+### Using an Alternative Port
+
+If port 25 is blocked, you may need to:
+
+1. **Use a relay service** — Forward emails through a service that has port 25 access
+2. **Request port 25 access** — Some providers allow this upon request
+3. **Use a different hosting provider** — Consider a VPS that allows SMTP traffic
+
+### Common Cloud Provider Restrictions
+
+| Provider | Port 25 Status |
+|----------|---------------|
+| AWS | Blocked by default, can request removal |
+| Google Cloud | Blocked, requires relay |
+| Azure | Blocked by default |
+| DigitalOcean | Open on most droplets |
+| Linode | Open |
+| Vultr | Open |
+| Hetzner | Open |
+
+## Testing SMTP
+
+### Test with Telnet
+
+```bash
+telnet mail.example.com 25
+```
+
+You should see a response like:
+
+```
+220 mail.example.com ESMTP CloakMail
+```
+
+### Test with swaks
+
+```bash
+swaks --to test@mail.example.com --from sender@test.com --server mail.example.com
+```
+
+### Check MX Records
+
+```bash
+dig MX example.com +short
+```
+
+## Firewall Configuration
+
+Ensure your firewall allows traffic on the SMTP port:
+
+### UFW (Ubuntu)
+
+```bash
+sudo ufw allow 25/tcp
+```
+
+### iptables
+
+```bash
+sudo iptables -A INPUT -p tcp --dport 25 -j ACCEPT
+```
+
+## Troubleshooting
+
+### Emails Not Being Received
+
+1. **Check DNS propagation** — Use `dig MX yourdomain.com` to verify MX records
+2. **Check firewall rules** — Ensure port 25 is open
+3. **Check server logs** — `docker compose logs server`
+4. **Test connectivity** — `telnet mail.example.com 25`
+
+### Connection Refused
+
+- Port 25 may be blocked by your hosting provider
+- Firewall may be blocking the connection
+- The server may not be running
+
+### Connection Timeout
+
+- DNS may not be properly configured
+- The server IP may be incorrect
+- Network routing issues
+
+## Next Steps
+
+- [TTL Settings](/configuration/ttl-settings) — Configure email expiration
+- [Production Deployment](/deployment/production) — Production best practices

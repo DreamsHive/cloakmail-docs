@@ -1,0 +1,244 @@
+---
+title: API Endpoints
+description: Complete reference for CloakMail REST API endpoints
+---
+
+# API Endpoints
+
+This page documents all available REST API endpoints in CloakMail.
+
+## Inbox Endpoints
+
+### Get Inbox Emails
+
+Retrieves all emails for a specific inbox address with pagination.
+
+```bash
+GET /api/inbox/{address}
+```
+
+**Parameters:**
+
+| Parameter | Type | Location | Description |
+|-----------|------|----------|-------------|
+| `address` | string | path | The email address to query |
+| `page` | number | query | Page number (default: 1) |
+| `limit` | number | query | Results per page, max 50 (default: 10) |
+
+**Response:**
+
+```json
+{
+  "emails": [
+    {
+      "id": "abc123",
+      "to": "test@mail.example.com",
+      "from": "sender@example.com",
+      "subject": "Test Email",
+      "text": "Plain text content...",
+      "html": "<html>...</html>",
+      "headers": {
+        "content-type": "text/html"
+      },
+      "receivedAt": "2024-01-15T10:35:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1,
+    "hasMore": false
+  }
+}
+```
+
+**Example:**
+
+```bash
+# Get first page of emails
+curl http://localhost:3000/api/inbox/test@mail.example.com
+
+# With pagination
+curl "http://localhost:3000/api/inbox/test@mail.example.com?page=1&limit=20"
+```
+
+### Delete Inbox
+
+Deletes all emails from an inbox.
+
+```bash
+DELETE /api/inbox/{address}
+```
+
+**Parameters:**
+
+| Parameter | Type | Location | Description |
+|-----------|------|----------|-------------|
+| `address` | string | path | The email address inbox to clear |
+
+**Response:**
+
+```json
+{
+  "deleted": 5
+}
+```
+
+**Example:**
+
+```bash
+curl -X DELETE http://localhost:3000/api/inbox/test@mail.example.com
+```
+
+## Email Endpoints
+
+### Get Email
+
+Retrieves the full content of a specific email by ID.
+
+```bash
+GET /api/email/{id}
+```
+
+**Parameters:**
+
+| Parameter | Type | Location | Description |
+|-----------|------|----------|-------------|
+| `id` | string | path | The email's unique ID |
+
+**Response:**
+
+```json
+{
+  "id": "abc123",
+  "to": "test@mail.example.com",
+  "from": "sender@example.com",
+  "subject": "Test Email",
+  "text": "Plain text content...",
+  "html": "<html>...</html>",
+  "headers": {
+    "content-type": "text/html",
+    "date": "Mon, 15 Jan 2024 10:35:00 +0000"
+  },
+  "receivedAt": "2024-01-15T10:35:00Z"
+}
+```
+
+**Example:**
+
+```bash
+curl http://localhost:3000/api/email/abc123
+```
+
+### Delete Email
+
+Deletes a specific email by ID.
+
+```bash
+DELETE /api/email/{id}
+```
+
+**Parameters:**
+
+| Parameter | Type | Location | Description |
+|-----------|------|----------|-------------|
+| `id` | string | path | The email's unique ID |
+
+**Response:**
+
+```json
+{
+  "deleted": true
+}
+```
+
+**Example:**
+
+```bash
+curl -X DELETE http://localhost:3000/api/email/abc123
+```
+
+## Health Check
+
+### Get Health Status
+
+Check if the API is running and healthy.
+
+```bash
+GET /api/health
+```
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "smtp": "connected",
+  "redis": "connected",
+  "uptime": 3600
+}
+```
+
+**Example:**
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+## Error Responses
+
+All endpoints may return error responses:
+
+### 404 Not Found
+
+```json
+{
+  "error": "Email not found"
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+## Data Types
+
+### StoredEmail
+
+```typescript
+interface StoredEmail {
+  id: string;
+  to: string;
+  from: string;
+  subject: string;
+  text: string;
+  html: string;
+  headers: Record<string, string>;
+  receivedAt: string;
+}
+```
+
+### InboxResponse
+
+```typescript
+interface InboxResponse {
+  emails: StoredEmail[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+```
+
+## Next Steps
+
+- [OpenAPI Spec](/api-reference/openapi) - Download the full API specification
+- [Quick Start](/getting-started/quick-start) - Try the API with examples

@@ -1,0 +1,118 @@
+---
+title: Environment Variables
+description: Configure CloakMail with environment variables
+---
+
+# Environment Variables
+
+CloakMail is configured entirely through environment variables, making it easy to customize for different environments.
+
+## Required Variables
+
+These variables must be set for CloakMail to function properly:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DOMAIN` | Your email domain for receiving emails | `mail.example.com` |
+
+## Optional Variables
+
+These variables have sensible defaults but can be customized:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_NAME` | Application name shown in the UI | `CloakMail` |
+| `EMAIL_TTL_SECONDS` | Time until emails expire (in seconds) | `3600` (1 hour) |
+| `SMTP_PORT` | Port for the SMTP server | `25` |
+| `API_PORT` | Port for the REST API | `3000` |
+
+## Complete Example
+
+Here's a complete `.env` file with all available options:
+
+```bash title=".env"
+# ================================
+# Domain Configuration
+# ================================
+
+# Your email domain (required)
+DOMAIN=mail.example.com
+
+# Application name shown in UI
+APP_NAME=CloakMail
+
+# ================================
+# Email Settings
+# ================================
+
+# Time until emails are automatically deleted (in seconds)
+# Default: 3600 (1 hour)
+# Examples:
+#   - 1800 = 30 minutes
+#   - 3600 = 1 hour
+#   - 86400 = 24 hours
+EMAIL_TTL_SECONDS=3600
+
+# ================================
+# Server Ports
+# ================================
+
+# SMTP server port (for receiving emails)
+SMTP_PORT=25
+
+# REST API port
+API_PORT=3000
+```
+
+## Environment-Specific Configuration
+
+### Development
+
+```bash title=".env.development"
+DOMAIN=localhost
+APP_NAME=CloakMail Dev
+EMAIL_TTL_SECONDS=300
+SMTP_PORT=2525
+API_PORT=3000
+```
+
+### Production
+
+```bash title=".env.production"
+DOMAIN=mail.yourcompany.com
+APP_NAME=YourCompany Mail
+EMAIL_TTL_SECONDS=86400
+SMTP_PORT=25
+API_PORT=3000
+```
+
+## Docker Compose Override
+
+You can override environment variables in your `docker-compose.yml`:
+
+```yaml
+services:
+  server:
+    environment:
+      - DOMAIN=mail.example.com
+      - EMAIL_TTL_SECONDS=7200
+```
+
+Or use an env file:
+
+```yaml
+services:
+  server:
+    env_file:
+      - .env
+      - .env.local
+```
+
+<Callout type="info">
+  Variables in `.env.local` will override those in `.env`, allowing you to keep sensitive values separate.
+</Callout>
+
+## Next Steps
+
+- [SMTP Settings](/configuration/smtp-settings) — Configure the SMTP server
+- [TTL Settings](/configuration/ttl-settings) — Configure email expiration

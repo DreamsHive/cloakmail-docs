@@ -1,0 +1,118 @@
+---
+title: Quick Start
+description: Get started with CloakMail disposable email service
+---
+
+# Quick Start
+
+This guide will walk you through using CloakMail for disposable email addresses.
+
+## Using the Web UI
+
+### 1. Access the Web Interface
+
+Open your browser and navigate to your CloakMail instance:
+
+```
+http://localhost:5173
+```
+
+### 2. Generate an Inbox
+
+Click the **"Generate Inbox"** button. You'll instantly receive:
+
+- A unique email address (e.g., `random123@mail.example.com`)
+- An inbox that automatically expires based on your TTL settings
+
+### 3. Receive Emails
+
+Use the generated email address anywhere you need a temporary email. All incoming emails will appear in your inbox in real-time.
+
+### 4. View and Manage Emails
+
+- Click on any email to view its full content
+- Delete individual emails or the entire inbox
+- Copy the email address to clipboard
+
+## Using the API
+
+You can also interact with CloakMail programmatically via the REST API.
+
+### Get Emails for an Inbox
+
+After sending emails to your generated address, retrieve them:
+
+```bash
+curl http://localhost:3000/api/inbox/random123@mail.example.com
+```
+
+Response:
+
+```json
+{
+  "emails": [
+    {
+      "id": "abc123",
+      "to": "random123@mail.example.com",
+      "from": "sender@example.com",
+      "subject": "Welcome!",
+      "text": "Hello...",
+      "html": "<p>Hello...</p>",
+      "receivedAt": "2024-01-15T10:35:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1,
+    "hasMore": false
+  }
+}
+```
+
+### Get a Specific Email
+
+```bash
+curl http://localhost:3000/api/email/abc123
+```
+
+### Delete an Inbox
+
+```bash
+curl -X DELETE http://localhost:3000/api/inbox/random123@mail.example.com
+```
+
+## How It Works
+
+1. **Generate an address** — Use the web UI or any address at your configured domain
+2. **Use the address** — Sign up for services, receive verification codes, etc.
+3. **Check your inbox** — Emails appear instantly via the web UI or API
+4. **Auto-cleanup** — Emails are automatically deleted after the configured TTL
+
+<Callout type="info">
+  Inboxes are created automatically when emails are received. Any address at your configured domain will work.
+</Callout>
+
+## Common Use Cases
+
+<Cards>
+  <Card title="Testing Signups">
+    Use CloakMail to test registration flows without using real email addresses
+  </Card>
+  <Card title="Avoiding Spam">
+    Generate temporary addresses for one-time signups to newsletters or services
+  </Card>
+  <Card title="Development">
+    Test email functionality in your applications without sending real emails
+  </Card>
+  <Card title="Privacy">
+    Keep your real email address private when signing up for services
+  </Card>
+</Cards>
+
+## Next Steps
+
+- [API Reference](/api-reference/overview) — Full API documentation
+- [Configuration](/configuration/environment-variables) — Customize your instance
+- [TTL Settings](/configuration/ttl-settings) — Configure email expiration

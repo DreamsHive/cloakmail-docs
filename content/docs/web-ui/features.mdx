@@ -1,0 +1,158 @@
+---
+title: Web UI Features
+description: Detailed guide to CloakMail web interface features
+---
+
+# Web UI Features
+
+This guide covers all features available in the CloakMail web interface.
+
+## Inbox Management
+
+### Creating an Inbox
+
+1. Navigate to the homepage
+2. Click **"Generate Inbox"**
+3. A new inbox is created with a unique email address
+
+<Callout type="info">
+  Inboxes are created instantly without any signup or authentication.
+</Callout>
+
+### Inbox Information
+
+Each inbox displays:
+
+- **Email address** — The disposable address (e.g., `abc123@mail.example.com`)
+- **Created time** — When the inbox was generated
+- **Expiration** — Countdown to when the inbox will be deleted
+
+### Copying Email Address
+
+Click the **copy icon** next to the email address to copy it to your clipboard. A confirmation toast will appear.
+
+### Deleting an Inbox
+
+To delete an inbox and all its emails:
+
+1. Click the **trash icon** in the inbox header
+2. Confirm the deletion
+
+<Callout type="warning">
+  Deletion is permanent and cannot be undone.
+</Callout>
+
+## Email Management
+
+### Email List
+
+The email list shows all received emails with:
+
+- **From** — Sender's email address
+- **Subject** — Email subject line
+- **Time** — When the email was received
+- **Preview** — First line of the email body
+
+### Reading Emails
+
+Click any email in the list to view its full content:
+
+- **Headers** — From, To, Subject, Date
+- **Body** — Plain text and/or HTML content
+- **Attachments** — List of attached files
+
+### HTML Rendering
+
+HTML emails are rendered safely in an iframe to prevent XSS attacks while maintaining formatting.
+
+### Plain Text View
+
+Toggle between HTML and plain text views for emails that have both formats.
+
+### Deleting Emails
+
+Delete individual emails:
+
+1. Open the email
+2. Click **"Delete"**
+3. The email is permanently removed
+
+## Real-time Updates
+
+### Automatic Refresh
+
+The inbox automatically checks for new emails every few seconds. New emails appear at the top of the list.
+
+### Manual Refresh
+
+Click the **refresh icon** to manually check for new emails.
+
+## Search and Filter
+
+### Searching Emails
+
+Use the search box to filter emails by:
+
+- Sender address
+- Subject line
+- Email content
+
+### Sorting
+
+Sort emails by:
+
+- **Newest first** (default)
+- **Oldest first**
+
+## Theme Support
+
+### Light Mode
+
+Clean, bright interface ideal for daytime use.
+
+### Dark Mode
+
+Reduced eye strain for nighttime use. Toggle via:
+
+- Click the theme toggle in the header
+- Or use system preference
+
+## Accessibility
+
+The UI supports:
+
+- **Keyboard navigation** — Tab through elements
+- **Screen readers** — ARIA labels on all interactive elements
+- **High contrast** — Works with system high contrast settings
+- **Reduced motion** — Respects `prefers-reduced-motion`
+
+## Mobile Experience
+
+The mobile UI includes:
+
+- **Touch-friendly buttons** — Large tap targets
+- **Swipe gestures** — Swipe to delete emails
+- **Responsive layout** — Adapts to screen size
+- **Pull to refresh** — Pull down to check for new emails
+
+## Browser Support
+
+Tested and supported on:
+
+| Browser | Version |
+|---------|---------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
+
+## Performance
+
+- **Fast initial load** — Optimized bundle size
+- **Efficient updates** — Only refreshes changed content
+- **Lazy loading** — Email content loads on demand
+
+## Next Steps
+
+- [Installation](/getting-started/installation) — Deploy CloakMail
+- [API Overview](/api-reference/overview) — Programmatic access
