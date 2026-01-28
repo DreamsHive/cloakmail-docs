@@ -1,7 +1,5 @@
 import { source } from "@/lib/source";
 
-export const runtime = "edge";
-
 export async function GET() {
   const lines: string[] = [];
   lines.push("# Documentation");

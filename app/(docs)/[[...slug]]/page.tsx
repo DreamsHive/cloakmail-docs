@@ -11,8 +11,6 @@ import { LLMCopyButton, ViewOptions } from "@/components/ai/page-actions";
 import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
 
-export const runtime = "edge";
-
 export default async function Page(props: PageProps<"/[[...slug]]">) {
   const params = await props.params;
   const page = source.getPage(params.slug);

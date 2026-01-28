@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
 import { source } from "@/lib/source";
 
-export const runtime = "edge";
-
 export async function GET(
   _req: Request,
   { params }: RouteContext<"/og/[...slug]">,

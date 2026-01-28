@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLLMText, source } from "@/lib/source";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function GET(
