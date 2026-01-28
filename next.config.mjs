@@ -8,7 +8,6 @@ const config = {
   images: {
     unoptimized: true,
   },
-  output: "standalone",
   turbopack: {
     root: process.cwd(),
   },
