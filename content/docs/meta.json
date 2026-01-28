@@ -8,6 +8,7 @@
     "getting-started/installation",
     "getting-started/quick-start",
     "getting-started/docker",
+    "llms-txt",
     "---Configuration---",
     "configuration/environment-variables",
     "configuration/smtp-settings",
