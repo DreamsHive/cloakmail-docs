@@ -1,6 +1,6 @@
 import { source } from "@/lib/source";
 
-export const revalidate = false;
+export const runtime = "edge";
 
 export async function GET() {
   const lines: string[] = [];
