@@ -7,6 +7,40 @@ description: Get started with CloakMail disposable email service
 
 This guide will walk you through using CloakMail for disposable email addresses.
 
+<Callout type="info">
+  This guide assumes you have CloakMail already deployed. If not, pick one of the two deployment paths below first, then come back here.
+</Callout>
+
+## Deployment Options
+
+CloakMail ships with two independent deployment paths. Pick whichever fits your situation — they don't interact, and you can run both for different domains.
+
+### Option 1 — Cloudflare Workers (fastest, free tier)
+
+Run CloakMail entirely on Cloudflare's free tier — no servers, no Docker, no SSH. One command from any directory:
+
+```bash
+bunx cloakmail-cli setup
+```
+
+The [`cloakmail-cli`](https://github.com/DreamsHive/cloakmail-cli) wizard provisions D1 + R2, deploys both Workers, configures Email Routing, binds your custom domain, and verifies the whole thing — in about two minutes. Free tier supports ~100k emails/day.
+
+**Prerequisites:** a Cloudflare account, a domain already on Cloudflare DNS, and [Bun](https://bun.sh/) installed locally.
+
+See the [full Cloudflare deployment guide](/deployment/cloudflare) for API token scopes, architecture details, and advanced flags.
+
+### Option 2 — Docker / VPS (full control)
+
+Pull and run directly from GitHub Container Registry on any server with Docker:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DreamsHive/cloakmail/main/docker-compose.yml -o docker-compose.yml
+export DOMAIN=yourdomain.com
+docker compose up -d
+```
+
+See the [installation guide](/getting-started/installation) for prerequisites and the [Docker deployment guide](/deployment/docker) for production tuning.
+
 ## Using the Web UI
 
 ### 1. Access the Web Interface

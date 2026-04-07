@@ -3,7 +3,6 @@
   "description": "Self-hosted, open-source disposable email service",
   "root": true,
   "pages": [
-    "index",
     "---Getting Started---",
     "getting-started/installation",
     "getting-started/quick-start",
@@ -13,8 +12,7 @@
     "configuration/environment-variables",
     "configuration/smtp-settings",
     "configuration/ttl-settings",
-    "---API Reference---",
-    "api-reference/index",
+    "---API References---",
     "api-reference/overview",
     "api-reference/endpoints",
     "api-reference/openapi",
@@ -23,6 +21,7 @@
     "web-ui/features",
     "---Deployment---",
     "deployment/docker",
+    "deployment/cloudflare",
     "deployment/production",
     "---Contributing---",
     "contributing"

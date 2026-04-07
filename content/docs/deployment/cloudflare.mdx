@@ -1,0 +1,180 @@
+---
+title: Cloudflare Deployment
+description: Deploy CloakMail to Cloudflare Workers + D1 + R2 + Email Routing on the free tier
+---
+
+# Cloudflare Deployment
+
+Deploy CloakMail entirely on Cloudflare's free tier — no servers to manage, no Docker, no SSH. The entire stack runs on Workers + D1 + R2 + Email Routing, provisioned end-to-end by a single command via the [`cloakmail-cli`](https://github.com/DreamsHive/cloakmail-cli) wizard.
+
+<Callout type="info">
+  Cloudflare deployment is fully independent from the Docker path. You can run one or both — they don't interact.
+</Callout>
+
+## Prerequisites
+
+- A **Cloudflare account** (free tier is fine)
+- A **domain** already added to Cloudflare DNS
+- [**Bun**](https://bun.sh/) installed locally (used to run `bunx cloakmail-cli`)
+
+<Callout type="warn">
+  Your domain must be on a zone you own in Cloudflare DNS. If you haven't added your domain yet, do that first at [dash.cloudflare.com](https://dash.cloudflare.com) → Add site.
+</Callout>
+
+## One-Command Deploy
+
+From any directory on your machine:
+
+```bash
+bunx cloakmail-cli setup
+```
+
+The wizard walks you through nine phases in about two minutes:
+
+1. **Validate** — checks prerequisites, verifies your Cloudflare API token has the right scopes
+2. **Prompts** — asks for your email zone, web hostname, and optional advanced settings (worker names, TTL, etc.)
+3. **Acquire source** — fetches the latest `cloakmail` release tarball from GitHub
+4. **Provision** — creates a D1 database and R2 bucket via `wrangler`
+5. **Render** — fills in the `wrangler.toml` templates with your values
+6. **Deploy** — ships both workers (API + web) and applies D1 migrations
+7. **Routing** — enables Email Routing on your zone and creates a catch-all rule
+8. **Custom domain** — binds your chosen hostname to the web worker
+9. **Verify** — health-probes the deployment and prints a success card with clickable links
+
+When it's done, you have a working disposable email service at the hostname you picked.
+
+## API Token Setup
+
+Before running the wizard, create a Cloudflare API token at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) with these scopes:
+
+- **Account → Workers Scripts → Edit**
+- **Account → D1 → Edit**
+- **Account → Workers R2 Storage → Edit**
+- **Zone → Workers Routes → Edit**
+- **Zone → Email Routing Rules → Edit**
+- **Zone → DNS → Edit**
+- **Zone → Zone Settings → Edit**
+
+The wizard will prompt for the token on first run. By default it's held in memory only; pass `--save-token` to cache it encrypted at `~/.cloakmail-cli/state.json` for subsequent runs.
+
+## Architecture
+
+CloakMail on Cloudflare ships as **two workers linked by a service binding**:
+
+```
+                   Cloudflare Edge
+  ┌──────────────────────────────────────────────────────┐
+  │  Email Routing ──email()──▶  cloakmail-api Worker    │
+  │  (zone catch-all)            - Hono /api/*           │
+  │                              - email() handler       │
+  │                              - scheduled() TTL sweep │
+  │                              - D1 + R2 bindings      │
+  │                              - NO public hostname    │
+  │                                    │                 │
+  │                                    │ service binding │
+  │                                    ▼                 │
+  │  HTTPS ──▶  cloakmail-web Worker                     │
+  │   (your chosen    - SvelteKit (adapter-cloudflare)   │
+  │    hostname)      - hooks.server.ts proxies /api/*   │
+  └──────────────────────────────────────────────────────┘
+```
+
+Browsers hit a **single hostname** — the web worker proxies `/api/*` requests to the API worker via a Cloudflare service binding, so the API worker has zero public surface area.
+
+## Storage: D1 + R2 Smart Split
+
+Emails are stored with a size-aware split that maximizes free-tier capacity:
+
+- **Small emails** (< 100KB) — stored fully inline in D1. 1 write per email.
+- **Large emails** (≥ 100KB) — metadata + previews in D1, full body spilled to R2. 1 D1 + 1 R2 write.
+
+The 100KB threshold covers ~95% of temp emails (verification codes, magic links, newsletters). The split pushes the free-tier ceiling from ~33k emails/day (pure R2) to roughly **100k emails/day** (the D1 daily write limit).
+
+TTL is enforced two ways:
+- Every read filters `WHERE expires_at_ms > now()` so expired rows are invisible
+- A `scheduled()` cron runs daily at `0 3 * * *` and deletes expired rows + their R2 spillovers
+
+## Useful Flags
+
+| Flag | What it does |
+|---|---|
+| `--from <path>` | Use a local cloakmail checkout instead of fetching the GitHub tarball. Useful when hacking on a fork. |
+| `--version <tag>` | Pin to a specific cloakmail release tag (default: latest). |
+| `--reset` | Ignore cached state in `~/.cloakmail-cli/state.json` and prompt fresh. |
+| `--save-token` | Cache the Cloudflare API token to `~/.cloakmail-cli/state.json` (default: in-memory only). |
+| `--yes`, `-y` | Skip the final confirmation prompt. For CI / scripted runs. |
+| `--dry-run` | Walk through all the phases and print what *would* happen without creating any resources. |
+| `--no-rollback` | Skip the rollback prompt if setup fails. Useful for debugging. |
+| `--no-banner` | Suppress the ASCII-art banner. |
+
+## Updating
+
+Re-run the wizard against a newer cloakmail release:
+
+```bash
+bunx cloakmail-cli setup --version v1.2.0
+```
+
+The wizard is idempotent: it detects existing resources via Cloudflare API GETs and updates them in place rather than recreating. Your state at `~/.cloakmail-cli/state.json` is reused so you don't re-answer prompts.
+
+## Tearing Down
+
+To cleanly remove every resource the wizard created:
+
+```bash
+bunx cloakmail-cli destroy
+```
+
+The `destroy` command walks the creation manifest in reverse order — custom domain → catch-all rule → email routing → web worker → API worker → R2 bucket → D1 database — with a confirmation prompt before each batch. Pass `--yes` to skip confirmations.
+
+Partial teardowns are supported:
+
+| Flag | What it keeps |
+|---|---|
+| `--keep-email-routing` | Leaves Email Routing enabled on your zone (useful if other workers use it too) |
+| `--keep-state` | Leaves `~/.cloakmail-cli/state.json` in place so you can re-run `setup` later |
+
+## Free Tier Limits
+
+| Resource | Free tier | What it means for cloakmail |
+|---|---|---|
+| Workers requests | 100,000/day | ~100k inbox opens per day |
+| D1 writes | 100,000/day | ~100k emails received per day (smart split keeps most in D1) |
+| D1 storage | 5 GB | Plenty for auto-expiring disposable mail |
+| R2 storage | 10 GB | Only used for emails > 100KB |
+| R2 writes | 1,000,000/month | Effectively unlimited for temp mail |
+| Email Routing | Unlimited | No cap on inbound email volume |
+
+At the free tier, a personal cloakmail instance can comfortably handle thousands of disposable inboxes a day.
+
+## Troubleshooting
+
+### "Token verification failed"
+
+Your Cloudflare API token doesn't have all the required scopes. Re-create it at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) with the exact list above.
+
+### "R2 not enabled on this account"
+
+R2 requires a one-time opt-in at [dash.cloudflare.com](https://dash.cloudflare.com) → R2 → Enable. The wizard will exit with a clickable link if this step is needed.
+
+### "workers.dev subdomain not registered"
+
+First-time worker deployments need a `.workers.dev` subdomain. Visit [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages, pick any subdomain, and re-run setup.
+
+### "Email Routing 403"
+
+The `Zone → Zone Settings → Edit` scope is missing from your API token. Add it and re-run.
+
+### Health probe inconclusive at the end
+
+This is best-effort — the deployment is technically complete by the time verify runs. New custom domains can take 30–90 seconds for DNS + TLS to propagate to all edge nodes. Try the URL in your browser; if it works there, the deployment succeeded.
+
+### Setup failed mid-run
+
+The wizard tracks a rollback manifest in `~/.cloakmail-cli/state.json`. On failure it prompts to roll back (deletes every resource it created in this run) or leave things in place so you can investigate. Re-running `cloakmail-cli setup` picks up from where it left off — no re-answering prompts.
+
+## Next Steps
+
+- [Quick Start](/getting-started/quick-start) — Create your first inbox and start using CloakMail
+- [Environment Variables](/configuration/environment-variables) — Tune TTL, max email size, and more
+- [Docker Deployment](/deployment/docker) — The alternative deployment path for VPS / on-prem

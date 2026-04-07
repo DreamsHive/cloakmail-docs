@@ -22,16 +22,5 @@ export function baseOptions(): BaseLayoutProps {
       url: "/",
     },
     githubUrl: "https://github.com/DreamsHive/cloakmail",
-    links: [
-      {
-        text: "Documentation",
-        url: "/",
-        active: "nested-url",
-      },
-      {
-        text: "API",
-        url: "/api-reference",
-      },
-    ],
   };
 }
